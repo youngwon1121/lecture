@@ -29,34 +29,12 @@ public class PersistentVertex implements Vertex {
 
     @Override
     public Object getProperty(String key) {
-        Object value = null;
-        try {
-            PreparedStatement pst = DBConnection.getInstance().getConnection().prepareStatement("SELECT * FROM Vertex_properties where vertex_id=? and `key`=?");
-            pst.setString(1, this.id);
-            pst.setString(2, key);
-            ResultSet rs = pst.executeQuery();
-            rs.first();
-            value = rs.getObject("value");
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-        return value;
+        return null;
     }
 
     @Override
     public Set<String> getPropertyKeys() {
-        Set<String> s = new HashSet<>();
-        try {
-            Statement stmt = DBConnection.getInstance().getConnection().createStatement();
-            ResultSet rs = stmt.executeQuery("select * from Vertex_properties where vertex_id='" + this.id + "'");
-            while (rs.next()) {
-                s.add(rs.getString("key"));
-            }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-
-        return s;
+        return null;
     }
 
     @Override
@@ -94,37 +72,5 @@ public class PersistentVertex implements Vertex {
     @Override
     public void remove() {
 
-    }
-
-
-    public static Vertex selectVertex(Graph g, String id) throws SQLException {
-        Statement stmt = DBConnection.getInstance().getConnection().createStatement();
-        ResultSet rs = stmt.executeQuery("SELECT * FROM Vertex WHERE vertex_id = " + id);
-
-        if (!rs.next()) {
-            return null;
-        }
-
-        return new PersistentVertex(g, id);
-    }
-
-    public static Vertex createVertex(Graph g, String id) throws SQLException {
-        Statement stmt = DBConnection.getInstance().getConnection().createStatement();
-        String q = "INSERT INTO Vertex VALUES(" + id  + ");";
-        stmt.executeUpdate(q);
-
-        return new PersistentVertex(g, id);
-    }
-
-    public static Collection<Vertex> selectVertices(Graph g) throws SQLException {
-        Statement stmt = DBConnection.getInstance().getConnection().createStatement();
-        ResultSet rs = stmt.executeQuery("SELECT * FROM Vertex");
-
-        ArrayList<Vertex> vertices = new ArrayList<>();
-        while (rs.next()) {
-            vertices.add(new PersistentVertex(g, rs.getString("vertex_id")));
-        }
-
-        return vertices;
     }
 }
