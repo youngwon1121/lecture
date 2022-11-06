@@ -29,11 +29,11 @@ public class PersistentVertex implements Vertex {
         Connection conn = DBConnection.getInstance().getConnection();
         try {
             Statement stmt = conn.createStatement();
-            String sql = "SELECT JSON_VALUE(vertex_property, '$."+key+"') FROM Vertex WHERE id = "+this.id+";";
+            String sql = "SELECT JSON_VALUE(vertex_property, '$."+key+"') FROM Vertex WHERE vertex_id = "+this.id+";";
             ResultSet rs = stmt.executeQuery(sql);
 
             if (rs.next()) {
-                return rs.getString(1);
+                return rs.getObject(1);
             }
         }
         catch (SQLException e){ }
@@ -46,7 +46,7 @@ public class PersistentVertex implements Vertex {
 
         Connection conn = DBConnection.getInstance().getConnection();
         try {
-            String sql = "SELECT JSON_KEYS(vertex_property) FROM Vertex WHERE id = ?;";
+            String sql = "SELECT JSON_KEYS(vertex_property) FROM Vertex WHERE vertex_id = ?;";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, this.id);
             ResultSet rs = pstmt.executeQuery();
@@ -66,7 +66,7 @@ public class PersistentVertex implements Vertex {
         // unique 유지
         Connection conn = DBConnection.getInstance().getConnection();
         try {
-            String sql = "UPDATE Vertex SET vertex_property = (SELECT JSON_SET(vertex_property, '$."+key+"',?)) WHERE id = ?;";
+            String sql = "UPDATE Vertex SET vertex_property = JSON_SET(vertex_property, '$."+key+"',?) WHERE vertex_id = ?;";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setObject (1,value); // value
             pstmt.setString(2,this.id); // id
@@ -83,10 +83,9 @@ public class PersistentVertex implements Vertex {
         Connection conn = DBConnection.getInstance().getConnection();
         PreparedStatement pstmt;
         try {
-            String sql = "UPDATE test SET vertex_property = (SELECT JSON_REMOVE(vertex_property, '$."+key+"') FROM test WHERE id = ?) WHERE id = ?;";
+            String sql = "UPDATE Vertex SET vertex_property = JSON_REMOVE(vertex_property, '$."+key+"') WHERE vertex_id = ?;";
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1,this.id);
-            pstmt.setString(2,this.id);
             pstmt.executeUpdate();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
@@ -181,6 +180,11 @@ public class PersistentVertex implements Vertex {
     }
 
     @Override
+    public Collection<Vertex> getTwoHopVertices(Direction direction, String... labels) throws IllegalArgumentException {
+        return null;
+    }
+
+    @Override
     public Collection<Vertex> getVertices(Direction direction, String key, Object value, String... labels) throws IllegalArgumentException {
         ArrayList<Vertex> ret = new ArrayList<>();
 
@@ -229,7 +233,7 @@ public class PersistentVertex implements Vertex {
         Connection conn = DBConnection.getInstance().getConnection();
         // 이미 Edge들은 다 지워졌다는 가정하에 코드 실행
         try {
-            String sql = "DELETE FROM Vertex WHERE id = ?;";
+            String sql = "DELETE FROM Vertex WHERE vertex_id = ?;";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, this.id);
         } catch (SQLException e) { e.printStackTrace();}

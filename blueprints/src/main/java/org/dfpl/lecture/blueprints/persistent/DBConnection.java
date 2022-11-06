@@ -19,7 +19,7 @@ public class DBConnection {
 
         stmt.executeUpdate("CREATE OR REPLACE table Vertex(" +
                 "    vertex_id varchar(30)," +
-                "    vertex_property JSON," +
+                "    vertex_property JSON DEFAULT json_object()," +
                 "    PRIMARY KEY (vertex_id)" +
                 ");");
         stmt.executeUpdate("CREATE OR REPLACE table Edge(" +
@@ -27,7 +27,7 @@ public class DBConnection {
                 "    in_vertex_id varchar(30)," +
                 "    out_vertex_id varchar(30)," +
                 "    edge_label varchar(30)," +
-                "    edge_property JSON," +
+                "    edge_property JSON DEFAULT json_object()," +
                 "    PRIMARY KEY (in_vertex_id, out_vertex_id, edge_label)," +
                 "    FOREIGN KEY (in_vertex_id) REFERENCES Vertex(vertex_id)," +
                 "    FOREIGN KEY (out_vertex_id) REFERENCES Vertex(vertex_id)" +
