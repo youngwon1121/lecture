@@ -8,7 +8,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 public class PersistentVertex implements Vertex {
     private Graph g;
@@ -29,14 +32,33 @@ public class PersistentVertex implements Vertex {
         Connection conn = DBConnection.getInstance().getConnection();
         try {
             Statement stmt = conn.createStatement();
+<<<<<<< Updated upstream
             String sql = "SELECT JSON_VALUE(vertex_property, '$."+key+"') FROM Vertex WHERE id = "+this.id+";";
             ResultSet rs = stmt.executeQuery(sql);
 
             if (rs.next()) {
                 return rs.getString(1);
+=======
+            String sql = "SELECT JSON_TYPE(value), value FROM (SELECT JSON_VALUE(vertex_property, '$."+key+"') AS value FROM Vertex WHERE vertex_id = "+this.id+") AS t;";
+            ResultSet rs = stmt.executeQuery(sql);
+
+            if (rs.next()) {
+                if(rs.getObject(2) == null) return null;
+                if(rs.getObject(1) == null) return rs.getObject(2);
+                switch (rs.getString(1)){
+                    case "ARRAY" : return rs.getArray(2);
+                    case "BOOLEAN" : return rs.getBoolean(2);
+                    case "DOUBLE" : return rs.getDouble(2);
+                    case "INTEGER" : return rs.getInt(2);
+                    case "STRING": return rs.getString(2);
+                    default: return rs.getObject(2);
+                }
+>>>>>>> Stashed changes
             }
         }
-        catch (SQLException e){ }
+        catch (SQLException e){
+            e.printStackTrace();
+        }
         return null;
     }
 
@@ -57,7 +79,9 @@ public class PersistentVertex implements Vertex {
                 }
             }
         }
-        catch (SQLException e){ }
+        catch (SQLException e){
+            e.printStackTrace();
+        }
         return keySet;
     }
 
@@ -68,7 +92,11 @@ public class PersistentVertex implements Vertex {
         try {
             String sql = "UPDATE Vertex SET vertex_property = (SELECT JSON_SET(vertex_property, '$."+key+"',?)) WHERE id = ?;";
             PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setObject (1,value); // value
+            if(value.getClass().getName() == "java.lang.Boolean"){
+                pstmt.setString(1, Boolean.parseBoolean(value.toString()) == true?"true":"false");
+            }
+            else
+                pstmt.setObject (1,value); // value
             pstmt.setString(2,this.id); // id
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -88,8 +116,8 @@ public class PersistentVertex implements Vertex {
             pstmt.setString(1,this.id);
             pstmt.setString(2,this.id);
             pstmt.executeUpdate();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return ret;
     }
@@ -104,7 +132,7 @@ public class PersistentVertex implements Vertex {
             String in_vertex_sql = "SELECT edge_id, edge_label AS vertex_id FROM Edge WHERE out_vertex_id = ?;";
             String out_vertex_sql = "SELECT edge_id, edge_label AS vertex_id FROM Edge WHERE in_vertex_id = ?;";
             switch (direction){
-                case IN: OUT:
+                case IN: case OUT:
                 if(direction == Direction.IN) {
                     pstmt = conn.prepareStatement(in_vertex_sql);
                     pstmt.setString(1, this.id);
@@ -181,6 +209,20 @@ public class PersistentVertex implements Vertex {
     }
 
     @Override
+<<<<<<< Updated upstream
+=======
+    public Collection<Vertex> getTwoHopVertices(Direction direction, String... labels) throws IllegalArgumentException {
+        ArrayList<Vertex> ret = new ArrayList<>();
+        for (Vertex v : this.getVertices(direction, labels)) {
+            for (var vv: v.getVertices(direction, labels)) {
+                ret.add(vv);
+            }
+        }
+        return ret;
+    }
+
+    @Override
+>>>>>>> Stashed changes
     public Collection<Vertex> getVertices(Direction direction, String key, Object value, String... labels) throws IllegalArgumentException {
         ArrayList<Vertex> ret = new ArrayList<>();
 

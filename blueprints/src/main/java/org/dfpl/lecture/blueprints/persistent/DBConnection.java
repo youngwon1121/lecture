@@ -14,7 +14,7 @@ public class DBConnection {
     public static void init(String dbID, String dbPW, String dbName) throws SQLException {
         conn = DriverManager.getConnection("jdbc:mariadb://localhost:3307", dbID, dbPW);
         Statement stmt = conn.createStatement();
-        stmt.executeUpdate("CREATE OR REPLACE DATABASE " + dbName);
+        stmt.executeUpdate("CREATE OR REPLACE DATABASE " + dbName + ";");
         stmt.executeUpdate("USE " + dbName);
 
         stmt.executeUpdate("CREATE OR REPLACE table Vertex(" +

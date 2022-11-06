@@ -28,7 +28,6 @@ public class PersistentGraph implements Graph {
 
     @Override
     public Vertex getVertex(String id) {
-
         return null;
     }
 
