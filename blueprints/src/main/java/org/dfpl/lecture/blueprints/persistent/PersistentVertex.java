@@ -32,13 +32,6 @@ public class PersistentVertex implements Vertex {
         Connection conn = DBConnection.getInstance().getConnection();
         try {
             Statement stmt = conn.createStatement();
-<<<<<<< Updated upstream
-            String sql = "SELECT JSON_VALUE(vertex_property, '$."+key+"') FROM Vertex WHERE id = "+this.id+";";
-            ResultSet rs = stmt.executeQuery(sql);
-
-            if (rs.next()) {
-                return rs.getString(1);
-=======
             String sql = "SELECT JSON_TYPE(value), value FROM (SELECT JSON_VALUE(vertex_property, '$."+key+"') AS value FROM Vertex WHERE vertex_id = "+this.id+") AS t;";
             ResultSet rs = stmt.executeQuery(sql);
 
@@ -53,7 +46,6 @@ public class PersistentVertex implements Vertex {
                     case "STRING": return rs.getString(2);
                     default: return rs.getObject(2);
                 }
->>>>>>> Stashed changes
             }
         }
         catch (SQLException e){
@@ -62,7 +54,7 @@ public class PersistentVertex implements Vertex {
         return null;
     }
 
-    @Override
+        @Override
     public Set<String> getPropertyKeys() {
         HashSet<String> keySet = new HashSet<>();
 
@@ -209,8 +201,6 @@ public class PersistentVertex implements Vertex {
     }
 
     @Override
-<<<<<<< Updated upstream
-=======
     public Collection<Vertex> getTwoHopVertices(Direction direction, String... labels) throws IllegalArgumentException {
         ArrayList<Vertex> ret = new ArrayList<>();
         for (Vertex v : this.getVertices(direction, labels)) {
@@ -222,7 +212,6 @@ public class PersistentVertex implements Vertex {
     }
 
     @Override
->>>>>>> Stashed changes
     public Collection<Vertex> getVertices(Direction direction, String key, Object value, String... labels) throws IllegalArgumentException {
         ArrayList<Vertex> ret = new ArrayList<>();
 
