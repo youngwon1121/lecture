@@ -19,16 +19,16 @@ public class DBConnection {
 
         stmt.executeUpdate("CREATE OR REPLACE table Vertex(" +
                 "    vertex_id varchar(30)," +
-                "    vertex_property JSON," +
+                "    vertex_property JSON DEFAULT json_object()," +
                 "    PRIMARY KEY (vertex_id)" +
                 ");");
         stmt.executeUpdate("CREATE OR REPLACE table Edge(" +
-                "    edge_id varchar(30) not null unique," +
-                "    in_vertex_id varchar(30)," +
-                "    out_vertex_id varchar(30)," +
+                "    edge_id varchar(30)," +
+                "    in_vertex_id varchar(30) not null," +
+                "    out_vertex_id varchar(30) not null," +
                 "    edge_label varchar(30)," +
-                "    edge_property JSON," +
-                "    PRIMARY KEY (in_vertex_id, out_vertex_id, edge_label)," +
+                "    edge_property JSON DEFAULT json_object()," +
+                "    PRIMARY KEY (edge_id)," +
                 "    FOREIGN KEY (in_vertex_id) REFERENCES Vertex(vertex_id)," +
                 "    FOREIGN KEY (out_vertex_id) REFERENCES Vertex(vertex_id)" +
                 ");");

@@ -39,7 +39,7 @@ public interface Vertex extends Element {
 	public Collection<Vertex> getVertices(Direction direction, String... labels) throws IllegalArgumentException;
 
 	public Collection<Vertex> getTwoHopVertices(Direction direction, String... labels) throws IllegalArgumentException;
-
+	
 	/**
 	 * Return the vertices adjacent to the vertex according to the provided
 	 * direction and edge labels. This method does not remove duplicate vertices
