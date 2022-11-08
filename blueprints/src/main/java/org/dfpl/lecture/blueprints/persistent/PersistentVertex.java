@@ -8,10 +8,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class PersistentVertex implements Vertex {
     private Graph g;
@@ -121,8 +118,19 @@ public class PersistentVertex implements Vertex {
         Connection conn = DBConnection.getInstance().getConnection();
         PreparedStatement pstmt = null;
         try {
-            String in_vertex_sql = "SELECT edge_id, edge_label FROM Edge WHERE out_vertex_id = ?;";
-            String out_vertex_sql = "SELECT edge_id, edge_label FROM Edge WHERE in_vertex_id = ?;";
+            String in_vertex_sql = "SELECT edge_id, edge_label FROM Edge WHERE in_vertex_id = ? ";
+            String out_vertex_sql = "SELECT edge_id, edge_label FROM Edge WHERE out_vertex_id = ? ";
+
+            String q ="";
+            if (labels.length > 0) {
+                q += "and edge_label in ('";
+                q += String.join("','", labels);
+                q += "')";
+
+                in_vertex_sql += q;
+                out_vertex_sql += q;
+            }
+
             switch (direction){
                 case IN: case OUT:
                 if(direction == Direction.IN) {
@@ -138,14 +146,8 @@ public class PersistentVertex implements Vertex {
                 while(rs.next()){
                     String edge_id = rs.getString("edge_id");
                     String edge_label = rs.getString("edge_label");
-                    for (var l:labels ) {
-                        if(l == edge_label){
-                            Edge e = g.getEdge(edge_id); // query를 한번 더 하는 것이므로 비효율적임
-                            // Edge e = new PersistentEdge(edge_id,.....)
-                            ret.add(e);
-                            break;
-                        }
-                    }
+                    Edge e = g.getEdge(edge_id);
+                    ret.add(e);
                 }
                 break;
                 case BOTH :
