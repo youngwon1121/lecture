@@ -1,9 +1,11 @@
 package org.dfpl.lecture.blueprints.persistent;
 
+import com.tinkerpop.blueprints.Contains;
 import com.tinkerpop.blueprints.revised.Direction;
 import com.tinkerpop.blueprints.revised.Edge;
 import com.tinkerpop.blueprints.revised.Graph;
 import com.tinkerpop.blueprints.revised.Vertex;
+import com.tinkerpop.blueprints.util.wrappers.partition.PartitionVertex;
 import org.json.JSONArray;
 
 import java.sql.*;
@@ -51,7 +53,6 @@ public class PersistentEdge implements Edge {
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1,this.id);
             pstmt.executeUpdate();
-
         } catch (SQLException e) { e.printStackTrace();}
     }
 
@@ -65,7 +66,7 @@ public class PersistentEdge implements Edge {
         Connection conn = DBConnection.getInstance().getConnection();
         try {
             Statement stmt = conn.createStatement();
-            String sql = "SELECT JSON_TYPE(value), value FROM (SELECT JSON_VALUE(edge_property, '$."+key+"') AS value FROM Edge WHERE edge_id = '"+this.id+"') AS t;";
+            String sql = "SELECT JSON_TYPE(v), v FROM (SELECT JSON_VALUE(edge_property, '$."+key+"') AS v FROM Edge WHERE edge_id = \""+this.id+"\") AS t;";
             ResultSet rs = stmt.executeQuery(sql);
 
             if (rs.next()) {
@@ -128,7 +129,6 @@ public class PersistentEdge implements Edge {
             e.printStackTrace();
         }
     }
-
     @Override
     public Object removeProperty(String key) {
         Object ret = getProperty(key);
