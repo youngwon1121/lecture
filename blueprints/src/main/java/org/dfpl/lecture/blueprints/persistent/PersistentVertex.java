@@ -8,10 +8,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class PersistentVertex implements Vertex {
     private Graph g;
@@ -117,34 +114,38 @@ public class PersistentVertex implements Vertex {
     @Override
     public Collection<Edge> getEdges(Direction direction, String... labels) throws IllegalArgumentException {
         ArrayList<Edge> ret = new ArrayList<>();
-        JSONObject labels_json = new JSONObject(labels);
+
         Connection conn = DBConnection.getInstance().getConnection();
         PreparedStatement pstmt = null;
         try {
-            String in_vertex_withLabel_sql = "SELECT edge_id FROM Edge WHERE out_vertex_id = ? AND edge_label IN ?;";
-            String out_vertex_withLabel_sql = "SELECT edge_id FROM Edge WHERE in_vertex_id = ? AND edge_label IN ?;";
-            String in_vertex_sql = "SELECT edge_id FROM Edge WHERE out_vertex_id = ?;";
-            String out_vertex_sql = "SELECT edge_id FROM Edge WHERE in_vertex_id = ?;";
+            String in_vertex_sql = "SELECT edge_id, edge_label FROM Edge WHERE in_vertex_id = ? ";
+            String out_vertex_sql = "SELECT edge_id, edge_label FROM Edge WHERE out_vertex_id = ? ";
+
+            String q ="";
+            if (labels.length > 0) {
+                q += "and edge_label in ('";
+                q += String.join("','", labels);
+                q += "')";
+
+                in_vertex_sql += q;
+                out_vertex_sql += q;
+            }
+
             switch (direction){
                 case IN: case OUT:
                 if(direction == Direction.IN) {
-                    if(labels.length == 0) pstmt = conn.prepareStatement(in_vertex_sql);
-                    else {
-                        pstmt = conn.prepareStatement(in_vertex_withLabel_sql);
-                        pstmt.setObject(2, labels_json);
-                    }
+                    pstmt = conn.prepareStatement(in_vertex_sql);
+                    pstmt.setString(1, this.id);
                 }
                 if(direction == Direction.OUT) {
-                    if(labels.length == 0) pstmt = conn.prepareStatement(out_vertex_sql);
-                    else {
-                        pstmt = conn.prepareStatement(out_vertex_withLabel_sql);
-                        pstmt.setObject(2, labels_json);
-                    }
+                    pstmt = conn.prepareStatement(out_vertex_sql);
+                    pstmt.setString(1, this.id);
                 }
-                pstmt.setString(1, this.id);
                 ResultSet rs = pstmt.executeQuery();
+                // 성능을 위해 후에 수정 필요
                 while(rs.next()){
                     String edge_id = rs.getString("edge_id");
+                    String edge_label = rs.getString("edge_label");
                     Edge e = g.getEdge(edge_id);
                     ret.add(e);
                 }
@@ -162,38 +163,33 @@ public class PersistentVertex implements Vertex {
     @Override
     public Collection<Vertex> getVertices(Direction direction, String... labels) throws IllegalArgumentException {
         ArrayList<Vertex> ret = new ArrayList<>();
-        JSONObject labels_json = new JSONObject(labels);
 
         Connection conn = DBConnection.getInstance().getConnection();
         PreparedStatement pstmt = null;
         try {
-            String in_vertex_sql = "SELECT in_vertex_id AS vertex_id FROM Edge WHERE out_vertex_id = ?;";
-            String out_vertex_sql = "SELECT out_vertex_id AS vertex_id FROM Edge WHERE in_vertex_id = ?;";
-            String in_vertex_withLabel_sql = "SELECT in_vertex_id AS vertex_id FROM Edge WHERE out_vertex_id = ? AND edge_label IN ?;";
-            String out_vertex_withLabel_sql = "SELECT out_vertex_id AS vertex_id FROM Edge WHERE in_vertex_id = ? AND edge_label IN ?;";
+            String in_vertex_sql = "SELECT edge_label, in_vertex_id AS vertex_id FROM Edge WHERE out_vertex_id = ?;";
+            String out_vertex_sql = "SELECT edge_label, out_vertex_id AS vertex_id FROM Edge WHERE in_vertex_id = ?;";
             switch (direction){
                 case IN: case OUT:
                     if(direction == Direction.IN) {
-                        if(labels.length == 0) pstmt = conn.prepareStatement(in_vertex_sql);
-                        else {
-                            pstmt = conn.prepareStatement(in_vertex_withLabel_sql);
-                            pstmt.setObject(2, labels_json);
-                        }
+                        pstmt = conn.prepareStatement(in_vertex_sql);
+                        pstmt.setString(1, this.id);
                     }
                     if(direction == Direction.OUT) {
-                        if(labels.length == 0) pstmt = conn.prepareStatement(out_vertex_sql);
-                        else {
-                            pstmt = conn.prepareStatement(out_vertex_withLabel_sql);
-                            pstmt.setObject(2, labels_json);
-                        }
+                        pstmt = conn.prepareStatement(out_vertex_sql);
+                        pstmt.setString(1, this.id);
                     }
-                    pstmt.setString(1, this.id);
                     ResultSet rs = pstmt.executeQuery();
-
+                    // 성능을 위해 후에 수정 필요
                     while(rs.next()){
+                        String edge_label = rs.getString("edge_label");
                         String vertex_id = rs.getString("vertex_id");
-                        Vertex v = g.getVertex(vertex_id);
-                        ret.add(v);
+                        for (var l:labels ) {
+                            if(l == edge_label){
+                                ret.add(new PersistentVertex(g, vertex_id));
+                                break;
+                            }
+                        }
                     }
                     break;
                 case BOTH :
@@ -217,7 +213,6 @@ public class PersistentVertex implements Vertex {
         return ret;
     }
 
-    // 수정해야함@@@@@
     @Override
     public Collection<Vertex> getVertices(Direction direction, String key, Object value, String... labels) throws IllegalArgumentException {
         ArrayList<Vertex> ret = new ArrayList<>();
@@ -281,5 +276,12 @@ public class PersistentVertex implements Vertex {
             pstmt.setString(1, this.id);
             pstmt.executeUpdate();
         } catch (SQLException e) { e.printStackTrace();}
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        PersistentVertex vertex = (PersistentVertex) object;
+        System.out.println(this.id +" : "+ vertex.id);
+        return this.id.equals(vertex.id);
     }
 }
