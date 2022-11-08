@@ -244,7 +244,9 @@ public class PersistentGraph implements Graph {
 
     @Override
     public void shutdown() {
-
+        try {
+            DBConnection.getInstance().getConnection().close();
+        }catch (SQLException e){e.printStackTrace();}
     }
 
     private String generateEdgeId(Vertex outVertex, Vertex inVertex, String label) {
