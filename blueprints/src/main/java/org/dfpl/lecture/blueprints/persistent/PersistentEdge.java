@@ -146,4 +146,13 @@ public class PersistentEdge implements Edge {
         }
         return ret;
     }
+
+    @Override
+    public boolean equals(Object object) {
+        PersistentEdge edge = (PersistentEdge)object;
+        if (this.id.equals(edge.id)) {
+            return true;
+        }
+        return false;
+    }
 }

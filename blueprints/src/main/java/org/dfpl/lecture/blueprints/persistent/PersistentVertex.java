@@ -277,4 +277,11 @@ public class PersistentVertex implements Vertex {
             pstmt.executeUpdate();
         } catch (SQLException e) { e.printStackTrace();}
     }
+
+    @Override
+    public boolean equals(Object object) {
+        PersistentVertex vertex = (PersistentVertex) object;
+        System.out.println(this.id +" : "+ vertex.id);
+        return this.id.equals(vertex.id);
+    }
 }
