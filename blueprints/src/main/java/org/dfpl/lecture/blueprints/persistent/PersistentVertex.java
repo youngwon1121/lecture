@@ -258,11 +258,21 @@ public class PersistentVertex implements Vertex {
     @Override
     public void remove() {
         Connection conn = DBConnection.getInstance().getConnection();
-        // 이미 Edge들은 다 지워졌다는 가정하에 코드 실행
+        String sql;
+        PreparedStatement pstmt;
         try {
-            String sql = "DELETE FROM Vertex WHERE vertex_id = ?;";
-            PreparedStatement pstmt = conn.prepareStatement(sql);
+            // Edge 삭제
+            sql = "DELETE FROM Edge WHERE out_vertex_id = ? OR in_vertex_id = ?;";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1,this.id);
+            pstmt.setString(2,this.id);
+            pstmt.executeUpdate();
+
+            // Vertex 삭제
+            sql = "DELETE FROM Vertex WHERE vertex_id = ?;";
+            pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, this.id);
+            pstmt.executeUpdate();
         } catch (SQLException e) { e.printStackTrace();}
     }
 }
