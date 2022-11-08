@@ -127,7 +127,7 @@ public class PersistentVertex implements Vertex {
         if (labels.length > 0) {
             q += "AND edge_label IN ('";
             q += String.join("','", labels);
-            q += "';)";
+            q += "');";
 
             in_vertex_sql += q;
             out_vertex_sql += q;
@@ -179,7 +179,7 @@ public class PersistentVertex implements Vertex {
         if (labels.length > 0) {
             q += "AND edge_label IN ('";
             q += String.join("','", labels);
-            q += "';)";
+            q += "');";
 
             in_vertex_sql += q;
             out_vertex_sql += q;
@@ -219,17 +219,19 @@ public class PersistentVertex implements Vertex {
         PreparedStatement pstmt = null;
 
         // sql String
-        String in_vertex_sql = "SELECT e2.out_vertex_id " +
-                        "FROM Edge AS e1 JOIN Edge AS e2 " +
-                        "WHERE e1.in_vertex_id = ? AND e1.out_vertex_id = e2.in_vertex_id;";
-        String out_vertex_sql = "SELECT e2.out_vertex_id " +
-                        "FROM Edge AS e1 JOIN Edge AS e2 " +
-                        "WHERE e1.in_vertex_id = ? AND e1.out_vertex_id = e2.in_vertex_id;";
+        String in_vertex_sql =
+                "SELECT e2.out_vertex_id " +
+                "FROM Edge AS e1 JOIN Edge AS e2 " +
+                "WHERE e1.in_vertex_id = ? AND e1.out_vertex_id = e2.in_vertex_id;";
+        String out_vertex_sql =
+                "SELECT e2.in_vertex_id " +
+                "FROM Edge AS e1 JOIN Edge AS e2 " +
+                "WHERE e1.out_vertex_id = ? AND e1.in_vertex_id = e2.out_vertex_id;";
         String q ="";
         if (labels.length > 0) {
             q += "AND edge_label IN ('";
             q += String.join("','", labels);
-            q += "';)";
+            q += "');";
 
             in_vertex_sql += q;
             out_vertex_sql += q;
@@ -266,17 +268,19 @@ public class PersistentVertex implements Vertex {
         PreparedStatement pstmt = null;
 
         // sql String
-        String in_vertex_sql = "SELECT in_vertex_id AS res_vertex_id " +
+        String in_vertex_sql =
+                "SELECT in_vertex_id AS res_vertex_id " +
                 "FROM Edge NATURAL JOIN Vertex " +
                 "WHERE out_vertex_id = vertex_id AND JSON_CONTAINS(edge_property,?,'$."+key+"') = 1 ";
-        String out_vertex_sql = "SELECT out_vertex_id AS res_vertex_id " +
+        String out_vertex_sql =
+                "SELECT out_vertex_id AS res_vertex_id " +
                 "FROM Edge NATURAL JOIN Vertex " +
                 "WHERE in_vertex_id = vertex_id AND JSON_CONTAINS(edge_property,?,'$."+key+"') = 1 ";
         String q ="";
         if (labels.length > 0) {
             q += "AND edge_label IN ('";
             q += String.join("','", labels);
-            q += "';)";
+            q += "');";
 
             in_vertex_sql += q;
             out_vertex_sql += q;
