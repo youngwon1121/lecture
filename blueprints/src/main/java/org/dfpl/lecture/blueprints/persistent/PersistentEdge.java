@@ -13,18 +13,26 @@ import java.util.Set;
 public class PersistentEdge implements Edge {
     private Graph g;
     private String id;
-    private Vertex in_vertex; // id만 저장?
-    private Vertex out_vertex;
+    private Vertex inVertex; // id만 저장?
+    private Vertex outVertex;
     private String label;
-    public PersistentEdge(Graph g, String id, Vertex in_vertex, Vertex out_vertex,String label){
+    public PersistentEdge(Graph g, String id, Vertex inVertex, Vertex outVertex,String label){
         this.id = id;
-        this.in_vertex = in_vertex;
-        this.out_vertex = out_vertex;
+        this.inVertex = inVertex;
+        this.outVertex = outVertex;
         this.label = label;
     }
+    
+
     @Override
     public Vertex getVertex(Direction direction) throws IllegalArgumentException {
-        return null;
+        if (direction.equals(Direction.OUT)) {
+            return outVertex;
+        } else if (direction.equals(Direction.IN)) {
+            return inVertex;
+        } else {
+            throw new IllegalArgumentException("Direction.BOTH is not allowed");
+        }
     }
 
     @Override
@@ -34,7 +42,17 @@ public class PersistentEdge implements Edge {
 
     @Override
     public void remove() {
+        Connection conn = DBConnection.getInstance().getConnection();
+        String sql;
+        PreparedStatement pstmt;
+        try {
+            // Edge 삭제
+            sql = "DELETE FROM Edge WHERE edge_id = ? ;";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1,this.id);
+            pstmt.executeUpdate();
 
+        } catch (SQLException e) { e.printStackTrace();}
     }
 
     @Override
@@ -47,7 +65,7 @@ public class PersistentEdge implements Edge {
         Connection conn = DBConnection.getInstance().getConnection();
         try {
             Statement stmt = conn.createStatement();
-            String sql = "SELECT JSON_TYPE(value), value FROM (SELECT JSON_VALUE(edge_property, '$."+key+"') AS value FROM Edge WHERE edge_id = "+this.id+") AS t;";
+            String sql = "SELECT JSON_TYPE(value), value FROM (SELECT JSON_VALUE(edge_property, '$."+key+"') AS value FROM Edge WHERE edge_id = '"+this.id+"') AS t;";
             ResultSet rs = stmt.executeQuery(sql);
 
             if (rs.next()) {

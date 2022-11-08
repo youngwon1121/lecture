@@ -121,8 +121,8 @@ public class PersistentVertex implements Vertex {
         Connection conn = DBConnection.getInstance().getConnection();
         PreparedStatement pstmt = null;
         try {
-            String in_vertex_sql = "SELECT edge_id, edge_label AS vertex_id FROM Edge WHERE out_vertex_id = ?;";
-            String out_vertex_sql = "SELECT edge_id, edge_label AS vertex_id FROM Edge WHERE in_vertex_id = ?;";
+            String in_vertex_sql = "SELECT edge_id, edge_label FROM Edge WHERE out_vertex_id = ?;";
+            String out_vertex_sql = "SELECT edge_id, edge_label FROM Edge WHERE in_vertex_id = ?;";
             switch (direction){
                 case IN: case OUT:
                 if(direction == Direction.IN) {
