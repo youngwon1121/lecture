@@ -167,8 +167,18 @@ public class PersistentVertex implements Vertex {
         Connection conn = DBConnection.getInstance().getConnection();
         PreparedStatement pstmt = null;
         try {
-            String in_vertex_sql = "SELECT edge_label, in_vertex_id AS vertex_id FROM Edge WHERE out_vertex_id = ?;";
-            String out_vertex_sql = "SELECT edge_label, out_vertex_id AS vertex_id FROM Edge WHERE in_vertex_id = ?;";
+            String in_vertex_sql = "SELECT edge_label, out_vertex_id AS vertex_id FROM Edge WHERE in_vertex_id = ? ";
+            String out_vertex_sql = "SELECT edge_label, in_vertex_id AS vertex_id FROM Edge WHERE out_vertex_id = ? ";
+            String q ="";
+            if (labels.length > 0) {
+                q += "and edge_label in ('";
+                q += String.join("','", labels);
+                q += "')";
+
+                in_vertex_sql += q;
+                out_vertex_sql += q;
+            }
+
             switch (direction){
                 case IN: case OUT:
                     if(direction == Direction.IN) {
@@ -184,12 +194,8 @@ public class PersistentVertex implements Vertex {
                     while(rs.next()){
                         String edge_label = rs.getString("edge_label");
                         String vertex_id = rs.getString("vertex_id");
-                        for (var l:labels ) {
-                            if(l == edge_label){
-                                ret.add(new PersistentVertex(g, vertex_id));
-                                break;
-                            }
-                        }
+                        Vertex e = g.getVertex(vertex_id);
+                        ret.add(e);
                     }
                     break;
                 case BOTH :
@@ -281,7 +287,6 @@ public class PersistentVertex implements Vertex {
     @Override
     public boolean equals(Object object) {
         PersistentVertex vertex = (PersistentVertex) object;
-        System.out.println(this.id +" : "+ vertex.id);
         return this.id.equals(vertex.id);
     }
 }
