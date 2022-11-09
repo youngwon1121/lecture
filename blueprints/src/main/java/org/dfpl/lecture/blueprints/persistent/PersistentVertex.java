@@ -298,7 +298,7 @@ public class PersistentVertex implements Vertex {
                     }
                     pstmt.setObject(1,value);
 
-                    ResultSet rs = null;
+                    ResultSet rs = pstmt.executeQuery();
                     while(rs.next()){
                         ret.add(new PersistentVertex(this.g, rs.getString("res_vertex_id")));
                     }
