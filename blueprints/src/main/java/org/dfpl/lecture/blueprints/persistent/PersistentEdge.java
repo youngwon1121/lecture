@@ -7,6 +7,7 @@ import com.tinkerpop.blueprints.revised.Graph;
 import com.tinkerpop.blueprints.revised.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.partition.PartitionVertex;
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.sql.*;
 import java.util.HashSet;
@@ -116,14 +117,14 @@ public class PersistentEdge implements Edge {
         // unique 유지
         Connection conn = DBConnection.getInstance().getConnection();
         try {
-            String sql = "UPDATE Edge SET edge_property = JSON_SET(edge_property, '$."+key+"',?) WHERE edge_id = ?;";
+            String sql = "UPDATE Edge SET edge_property = JSON_MERGE(edge_property,?) WHERE edge_id = ?;";
             PreparedStatement pstmt = conn.prepareStatement(sql);
-            if(value.getClass().getName() == "java.lang.Boolean"){
-                pstmt.setString(1, Boolean.parseBoolean(value.toString()) == true?"true":"false");
-            }
-            else
-                pstmt.setObject (1,value); // value
-            pstmt.setString(2,this.id); // id
+
+            JSONObject v = new JSONObject(); // value
+            v.put(key,value);
+
+            pstmt.setString(1,v.toString());
+            pstmt.setString(2,this.id);
             pstmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

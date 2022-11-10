@@ -5,12 +5,14 @@ import com.tinkerpop.blueprints.revised.Edge;
 import com.tinkerpop.blueprints.revised.Graph;
 import com.tinkerpop.blueprints.revised.Vertex;
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.StreamSupport;
 
 public class PersistentVertex implements Vertex {
     private Graph g;
@@ -81,14 +83,14 @@ public class PersistentVertex implements Vertex {
         // unique 유지
         Connection conn = DBConnection.getInstance().getConnection();
         try {
-            String sql = "UPDATE Vertex SET vertex_property = JSON_SET(vertex_property, '$."+key+"',?) WHERE vertex_id = ?;";
+            String sql = "UPDATE Vertex SET vertex_property = JSON_MERGE(vertex_property,?) WHERE vertex_id = ?;";
             PreparedStatement pstmt = conn.prepareStatement(sql);
-            if(value.getClass().getName() == "java.lang.Boolean"){
-                pstmt.setString(1, Boolean.parseBoolean(value.toString()) == true?"true":"false");
-            }
-            else
-                pstmt.setObject (1,value); // value
-            pstmt.setString(2,this.id); // id
+
+            JSONObject v = new JSONObject(); // value
+            v.put(key,value);
+
+            pstmt.setString(1,v.toString());
+            pstmt.setString(2,this.id);
             pstmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
