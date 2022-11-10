@@ -117,7 +117,7 @@ public class PersistentEdge implements Edge {
         // unique 유지
         Connection conn = DBConnection.getInstance().getConnection();
         try {
-            String sql = "UPDATE Edge SET edge_property = JSON_MERGE(edge_property,?) WHERE edge_id = ?;";
+            String sql = "UPDATE Edge SET edge_property = JSON_MERGE_PATCH(edge_property,?) WHERE edge_id = ?;";
             PreparedStatement pstmt = conn.prepareStatement(sql);
 
             JSONObject v = new JSONObject(); // value

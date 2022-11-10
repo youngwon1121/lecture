@@ -83,7 +83,7 @@ public class PersistentVertex implements Vertex {
         // unique 유지
         Connection conn = DBConnection.getInstance().getConnection();
         try {
-            String sql = "UPDATE Vertex SET vertex_property = JSON_MERGE(vertex_property,?) WHERE vertex_id = ?;";
+            String sql = "UPDATE Vertex SET vertex_property = JSON_MERGE_PATCH(vertex_property,?) WHERE vertex_id = ?;";
             PreparedStatement pstmt = conn.prepareStatement(sql);
 
             JSONObject v = new JSONObject(); // value
