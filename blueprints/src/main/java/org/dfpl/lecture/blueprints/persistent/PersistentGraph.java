@@ -96,7 +96,7 @@ public class PersistentGraph implements Graph {
         List<Vertex> vertices = new ArrayList<Vertex>();
 
         try {
-            String q = "SELECT * FROM Vertex WHERE json_value(vertex_property, '$." + key + "') = ?";
+            String q = "SELECT * FROM Vertex WHERE JSON_EXTRACT(vertex_property, '$." + key + "') = ?";
             PreparedStatement pst = conn.prepareStatement(q);
             pst.setObject(1, value);
             ResultSet rs = pst.executeQuery();
@@ -224,7 +224,7 @@ public class PersistentGraph implements Graph {
         List<Edge> edges = new ArrayList<Edge>();
 
         try {
-            String q = "SELECT * FROM Edge WHERE json_value(Edge_property, '$." + key + "') = ?";
+            String q = "SELECT * FROM Edge WHERE JSON_EXTRACT(Edge_property, '$." + key + "') = ?";
             PreparedStatement pst = conn.prepareStatement(q);
             pst.setObject(1, value);
             ResultSet rs = pst.executeQuery();
