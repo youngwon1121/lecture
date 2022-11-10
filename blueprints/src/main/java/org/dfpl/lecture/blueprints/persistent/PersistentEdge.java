@@ -67,7 +67,7 @@ public class PersistentEdge implements Edge {
         Connection conn = DBConnection.getInstance().getConnection();
         try {
             Statement stmt = conn.createStatement();
-            String sql = "SELECT JSON_TYPE(v), v FROM (SELECT JSON_VALUE(edge_property, '$."+key+"') AS v FROM Edge WHERE edge_id = \""+this.id+"\") AS t;";
+            String sql = "SELECT JSON_TYPE(v), v FROM (SELECT JSON_EXTRACT(edge_property, '$."+key+"') AS v FROM Edge WHERE edge_id = \""+this.id+"\") AS t;";
             ResultSet rs = stmt.executeQuery(sql);
 
             if (rs.next()) {

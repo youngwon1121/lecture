@@ -33,7 +33,7 @@ public class PersistentVertex implements Vertex {
         Connection conn = DBConnection.getInstance().getConnection();
         try {
             Statement stmt = conn.createStatement();
-            String sql = "SELECT JSON_TYPE(value), value FROM (SELECT JSON_VALUE(vertex_property, '$."+key+"') AS value FROM Vertex WHERE vertex_id = "+this.id+") AS t;";
+            String sql = "SELECT JSON_TYPE(value), value FROM (SELECT JSON_EXTRACT(vertex_property, '$."+key+"') AS value FROM Vertex WHERE vertex_id = "+this.id+") AS t;";
             ResultSet rs = stmt.executeQuery(sql);
 
             if (rs.next()) {
@@ -171,10 +171,12 @@ public class PersistentVertex implements Vertex {
         PreparedStatement pstmt = null;
 
         // sql String
-        String in_vertex_sql = "SELECT out_vertex_id AS vertex_id " +
+        String in_vertex_sql =
+                "SELECT out_vertex_id AS vertex_id " +
                 "FROM Edge " +
                 "WHERE in_vertex_id = ? ";
-        String out_vertex_sql = "SELECT in_vertex_id AS vertex_id " +
+        String out_vertex_sql =
+                "SELECT in_vertex_id AS vertex_id " +
                 "FROM Edge " +
                 "WHERE out_vertex_id = ? ";
         String q ="";
@@ -271,13 +273,13 @@ public class PersistentVertex implements Vertex {
 
         // sql String
         String in_vertex_sql =
-                "SELECT in_vertex_id AS res_vertex_id " +
-                "FROM Edge NATURAL JOIN Vertex " +
-                "WHERE out_vertex_id = vertex_id AND JSON_CONTAINS(edge_property,?,'$."+key+"') = 1 ";
+                        "SELECT out_vertex_id AS vertex_id " +
+                        "FROM Edge " +
+                        "WHERE in_vertex_id = ? AND JSON_CONTAINS(edge_property,?) = 1;";
         String out_vertex_sql =
-                "SELECT out_vertex_id AS res_vertex_id " +
-                "FROM Edge NATURAL JOIN Vertex " +
-                "WHERE in_vertex_id = vertex_id AND JSON_CONTAINS(edge_property,?,'$."+key+"') = 1 ";
+                        "SELECT in_vertex_id AS vertex_id " +
+                        "FROM Edge " +
+                        "WHERE out_vertex_id = ? AND JSON_CONTAINS(edge_property,?) = 1;";
         String q ="";
         if (labels.length > 0) {
             q += "AND edge_label IN ('";
@@ -295,14 +297,15 @@ public class PersistentVertex implements Vertex {
                         pstmt = conn.prepareStatement(in_vertex_sql);
 
                     }
-                    if(direction == Direction.OUT) {
+                    else if(direction == Direction.OUT) {
                         pstmt = conn.prepareStatement(out_vertex_sql);
                     }
-                    pstmt.setObject(1,value);
+                    pstmt.setString(1,this.id);
+                    pstmt.setString(2,(new JSONObject().put(key,value)).toString());
 
                     ResultSet rs = pstmt.executeQuery();
                     while(rs.next()){
-                        ret.add(new PersistentVertex(this.g, rs.getString("res_vertex_id")));
+                        ret.add(new PersistentVertex(this.g, rs.getString("vertex_id")));
                     }
                     break;
                 case BOTH :
