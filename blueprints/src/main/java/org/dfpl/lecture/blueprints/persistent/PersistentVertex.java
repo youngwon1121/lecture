@@ -205,53 +205,57 @@ public class PersistentVertex implements Vertex {
 
     @Override
     public Collection<Vertex> getTwoHopVertices(Direction direction, String... labels) throws IllegalArgumentException {
-        return this.getVertices(direction).stream().flatMap(v -> v.getVertices(direction).stream())
-                .flatMap(v -> v.getVertices(direction).stream()).toList();
-//        ArrayList<Vertex> ret = new ArrayList<>();
-//
-//        Connection conn = DBConnection.getInstance().getConnection();
-//        PreparedStatement pstmt = null;
-//
-//        // sql String
-//        String in_vertex_sql =
-//                "SELECT e2.out_vertex_id " +
-//                "FROM Edge AS e1 JOIN Edge AS e2 " +
-//                "WHERE e1.in_vertex_id = ? AND e1.out_vertex_id = e2.in_vertex_id;";
-//        String out_vertex_sql =
-//                "SELECT e2.in_vertex_id " +
-//                "FROM Edge AS e1 JOIN Edge AS e2 " +
-//                "WHERE e1.out_vertex_id = ? AND e1.in_vertex_id = e2.out_vertex_id;";
-//        String q ="";
-//        if (labels.length > 0) {
-//            q += "AND edge_label IN ('";
-//            q += String.join("','", labels);
-//            q += "');";
-//
-//            in_vertex_sql += q;
-//            out_vertex_sql += q;
-//        }
-//        try {
-//            switch (direction) {
-//                case IN :
-//                    pstmt = conn.prepareStatement(in_vertex_sql);
-//                    break;
-//                case OUT :
-//                    pstmt = conn.prepareStatement(out_vertex_sql);
-//                    break;
-//                case BOTH:
-//                    throw new IllegalArgumentException("Direction.BOTH is not allowed");
-//            }
-//            pstmt.setString(1, this.id);
-//            ResultSet rs = pstmt.executeQuery();
-//            while(rs.next()){
-//                ret.add(new PersistentVertex(this.g, rs.getString(1)));
-//            }
-//        }
-//        catch (SQLException e){
-//            e.printStackTrace();
-//        }
-//
-//        return ret;
+//        return this.getVertices(direction).stream().flatMap(v -> v.getVertices(direction).stream())
+//                .flatMap(v -> v.getVertices(direction).stream()).toList();
+        ArrayList<Vertex> ret = new ArrayList<>();
+
+        Connection conn = DBConnection.getInstance().getConnection();
+        PreparedStatement pstmt = null;
+
+        // sql String
+        String out_vertex_sql =
+                "select e3.in_vertex_id from Edge e1 " +
+                "join Edge e2 on e1.in_vertex_id = e2.out_vertex_id " +
+                "join Edge e3 on e2.in_vertex_id = e3.out_vertex_id " +
+                "where e1.out_vertex_id = ? ";
+
+        String in_vertex_sql =
+                "select e3.out_vertex_id from Edge e1 " +
+                "join Edge e2 on e1.out_vertex_id = e2.in_vertex_id " +
+                "join Edge e3 on e2.out_vertex_id = e3.in_vertex_id " +
+                "where e1.in_vertex_id = ? ";
+
+        String q ="";
+        if (labels.length > 0) {
+            q += "AND edge_label IN ('";
+            q += String.join("','", labels);
+            q += "');";
+
+            in_vertex_sql += q;
+            out_vertex_sql += q;
+        }
+        try {
+            switch (direction) {
+                case IN :
+                    pstmt = conn.prepareStatement(in_vertex_sql);
+                    break;
+                case OUT :
+                    pstmt = conn.prepareStatement(out_vertex_sql);
+                    break;
+                case BOTH:
+                    throw new IllegalArgumentException("Direction.BOTH is not allowed");
+            }
+            pstmt.setString(1, this.id);
+            ResultSet rs = pstmt.executeQuery();
+            while(rs.next()){
+                ret.add(new PersistentVertex(this.g, rs.getString(1)));
+            }
+        }
+        catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return ret;
     }
 
     @Override
