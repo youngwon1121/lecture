@@ -1,4 +1,4 @@
-package org.dfpl.lecture.blueprints.persistent;
+package org.dfpl.lecture.blueprints.persistent.team18;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -12,7 +12,7 @@ public class DBConnection {
     }
 
     public static void init(String dbID, String dbPW, String dbName) throws SQLException {
-        conn = DriverManager.getConnection("jdbc:mariadb://localhost:3307", dbID, dbPW);
+        conn = DriverManager.getConnection("jdbc:mariadb://localhost:3306", dbID, dbPW);
         Statement stmt = conn.createStatement();
         stmt.executeUpdate("CREATE OR REPLACE DATABASE " + dbName + ";");
         stmt.executeUpdate("USE " + dbName);

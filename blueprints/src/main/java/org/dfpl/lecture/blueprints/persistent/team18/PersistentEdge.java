@@ -1,12 +1,11 @@
-package org.dfpl.lecture.blueprints.persistent;
+package org.dfpl.lecture.blueprints.persistent.team18;
 
-import com.tinkerpop.blueprints.Contains;
 import com.tinkerpop.blueprints.revised.Direction;
 import com.tinkerpop.blueprints.revised.Edge;
 import com.tinkerpop.blueprints.revised.Graph;
 import com.tinkerpop.blueprints.revised.Vertex;
-import com.tinkerpop.blueprints.util.wrappers.partition.PartitionVertex;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.sql.*;
@@ -125,16 +124,17 @@ public class PersistentEdge implements Edge {
         try {
             String sql = "UPDATE Edge SET edge_property = JSON_MERGE_PATCH(edge_property,?) WHERE edge_id = ?;";
             PreparedStatement pstmt = conn.prepareStatement(sql);
-
             JSONObject v = new JSONObject(); // value
-            v.put(key,value);
-
+            try { v.put(key,value); }
+            catch (JSONException e) { v.put(key,JSONObject.NULL); }
             pstmt.setString(1,v.toString());
             pstmt.setString(2,this.id);
             pstmt.executeUpdate();
-        } catch (SQLException e) {
+        }
+        catch (SQLException e){
             e.printStackTrace();
         }
+
     }
     @Override
     public Object removeProperty(String key) {

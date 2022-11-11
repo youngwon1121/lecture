@@ -1,10 +1,11 @@
-package org.dfpl.lecture.blueprints.persistent;
+package org.dfpl.lecture.blueprints.persistent.team18;
 
 import com.tinkerpop.blueprints.revised.Direction;
 import com.tinkerpop.blueprints.revised.Edge;
 import com.tinkerpop.blueprints.revised.Graph;
 import com.tinkerpop.blueprints.revised.Vertex;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.sql.*;
@@ -12,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.StreamSupport;
 
 public class PersistentVertex implements Vertex {
     private Graph g;
@@ -93,7 +93,8 @@ public class PersistentVertex implements Vertex {
             PreparedStatement pstmt = conn.prepareStatement(sql);
 
             JSONObject v = new JSONObject(); // value
-            v.put(key,value);
+            try { v.put(key,value); }
+            catch (JSONException e) { v.put(key,JSONObject.NULL); }
 
             pstmt.setString(1,v.toString());
             pstmt.setString(2,this.id);
