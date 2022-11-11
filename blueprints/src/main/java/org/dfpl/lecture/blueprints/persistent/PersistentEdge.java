@@ -78,7 +78,13 @@ public class PersistentEdge implements Edge {
                     case "BOOLEAN" : return rs.getBoolean(2);
                     case "DOUBLE" : return rs.getDouble(2);
                     case "INTEGER" : return rs.getInt(2);
-                    case "STRING": return rs.getString(2);
+                    case "STRING":
+                        String s = rs.getString(2);
+                        if (s != null && s.length() >= 2
+                                && s.charAt(0) == '\"' && s.charAt(s.length() - 1) == '\"') {
+                            s = s.substring(1, s.length() - 1);
+                        }
+                        return s;
                     default: return rs.getObject(2);
                 }
             }
